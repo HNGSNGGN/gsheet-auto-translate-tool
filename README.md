@@ -1,6 +1,6 @@
 # API/決済不要！Googleスプレッドシート自動翻訳・更新ツール (Google Sheets Auto-Translation & Update Tool - No API Key/Payment Required)
 
-**➡️ [このスプレッドシートをコピーしてすぐに翻訳開始！](https://docs.google.com/spreadsheets/d/1iiGXb3FoQvdisdWWc9KplwzdHD07Ne1aYBnhvTI56ao/edit?usp=sharing)**
+**➡️ [このスプレッドシートをコピーしてすぐに翻訳開始！](https://docs.google.com/spreadsheets/d/1iiGXb3FoQvdisdWWc9KplwzdHD07Ne1aYBnhvTI56ao/copy)**
 
 *Google Apps Scriptの知識やAPIキー設定は一切不要です。上記リンクからシートをコピーするだけで、どなたでも簡単に利用を開始できます。*
 
@@ -94,7 +94,23 @@
 
 ## 今後の改善点
 
-*   **ハイパーリンク保持:** 現バージョンでは、翻訳処理の過程で**セル内のハイパーリンクは失われます。**
+*   ~~**ハイパーリンク保持:** 現バージョンでは、翻訳処理の過程で**セル内のハイパーリンクは失われます。**~~  
+*   ✅ **ハイパーリンク保持対応（2025-06-17更新）:** 翻訳対象セルに**ハイパーリンクが存在する場合、リンク情報も保持されたまま翻訳後のテキストに再適用**されるようになりました。  
+    - 技術的には `getRichTextValue()` を用いて元のリンクを取得し、`setRichTextValue()` で翻訳後のテキストと共に再構築しています。  
+    - 対応コード例（抜粋）:
+      ```javascript
+      if (srcRich && srcRich.getLinkUrl()) {
+        var link = srcRich.getLinkUrl();
+        var richVal = SpreadsheetApp.newRichTextValue()
+          .setText(translatedVal)
+          .setLinkUrl(link)
+          .build();
+        targetCell.setRichTextValue(richVal);
+      } else {
+        targetCell.setValue(translatedVal);
+      }
+      ```
+    - 実運用の中で寄せられた「翻訳後にリンクが消えてしまう」というユーザーフィードバックを受けて対応しました。
 
 ---
 
