@@ -195,26 +195,28 @@ function processOneTab(sourceTab, targetTab, srcCell, tgtCell) {
     var targetRange = copied.getRange(rangeStr);
     targetRange.clearDataValidations();
 
-    for (var col = 0; col < numCols; col++) {
-      var colArr = [];
-      var hasRef = false;
-      for (var row = 0; row < numRows; row++) {
-        var val = values[row][col];
-        colArr.push([val]);
-        if (isErrorCell(val)) hasRef = true;
-      }
-      var colRange = copied.getRange(1, col + 1, numRows, 1);
-      if (!hasRef) {
-        colRange.setValues(colArr);
-      } else {
-        for (var row = 0; row < numRows; row++) {
-          var val = values[row][col];
-          if (!isErrorCell(val)) {
-            colRange.getCell(row + 1, 1).setValue(val);
-          }
+    for (var row = 0; row < numRows; row++) {
+      for (var col = 0; col < numCols; col++) {
+        var translatedVal = values[row][col];
+        var srcRich = srcSheet.getRange(row + 1, col + 1).getRichTextValue();
+        var targetCell = copied.getRange(row + 1, col + 1);
+
+        if (isErrorCell(translatedVal)) continue;
+
+        if (srcRich && srcRich.getLinkUrl()) {
+          var link = srcRich.getLinkUrl();
+          var richVal = SpreadsheetApp.newRichTextValue()
+            .setText(translatedVal)
+            .setLinkUrl(link)
+            .build();
+          targetCell.setRichTextValue(richVal);
+        } else {
+          targetCell.setValue(translatedVal);
         }
       }
     }
+
+
 
     // 5. 書式をコピー (tmp2 → aタブ)
     var formatRange = tmp2.getRange(rangeStr);
